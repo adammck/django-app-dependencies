@@ -1,1 +1,29 @@
+This is (another) method of tracking and managing the inevitable dependencies
+between Django apps. Given a list of apps to run (as INSTALLED_APPS usually
+would), it spiders the apps recursively for their dependencies, and returns
+the complete list to store in settings.INSTALLED_APPS.
 
+In this sample repo, there are five apps: alpha through echo. Their
+dependencies look like (see the __init__.REQUIRED_APPS of each):
+
+  alpha
+    bravo
+      charlie
+      delta
+  echo
+
+The settings.py explicitly specifies only:
+
+  INSTALLED_APPS =\
+  depends.build([
+      "alpha",
+      "echo"
+  ])
+
+And the output is:
+
+  >>> settings.INSTALLED_APPS
+  ['charlie', 'delta', 'bravo', 'alpha', 'echo']
+
+This isn't really tied to Django; that's just how I built it. It could be
+used to track dependencies between any Python modules.
