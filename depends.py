@@ -67,9 +67,8 @@ def _dependencies(app_name):
     return []
 
 
-def build(app_names):
+def build(*app_names):
     apps = []
-
 
     def _build(app_name):
         for x in _dependencies(app_name):
@@ -83,12 +82,10 @@ def build(app_names):
         # its dependencies are imported before it is
         apps.append(app_name)
 
-
     # find all of the dependencies of the named
     # apps, to build the final INSTALLED_APPS
     for app_name in app_names:
         if app_name not in apps:
             _build(app_name)
-
 
     return apps

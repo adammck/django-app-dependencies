@@ -10,7 +10,7 @@ DATABASE_NAME   = "db.sqlite3"
 
 
 INSTALLED_APPS =\
-depends.build([
+depends.build(
     "alpha",
     "echo"
-])
+)
