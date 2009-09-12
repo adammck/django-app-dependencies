@@ -5,10 +5,6 @@
 import sys, traceback
 
 
-class DependencyError(Exception):
-    pass
-
-
 class DependencyImportError(ImportError):
     pass
 
