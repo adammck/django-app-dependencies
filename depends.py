@@ -10,10 +10,22 @@ class DependencyImportError(ImportError):
 
 
 def _try_import(module_name):
-    """Attempts to import and return *module_name*, returning None if an
-       ImportError was raised. Unlike the standard try/except approach to
-       optional imports, this method jumps through some hoops to avoid
-       catching ImportErrors raised from within *module_name*."""
+    """
+        Attempts to import and return *module_name*, returning None if an
+        ImportError was raised. Unlike the standard try/except approach to
+        optional imports, this method jumps through some hoops to avoid
+        catching ImportErrors raised from within *module_name*.
+
+          # import a module from the python
+          # stdlib. this should always work
+          >>> _try_import("csv") # doctest: +ELLIPSIS
+          <module 'csv' from '...'>
+
+          # attempt to import a module that
+          # doesn't exist; no exception raised
+          >>> _try_import("spam.spam.spam") is None
+          True
+    """
 
     try:
         __import__(module_name)
@@ -37,14 +49,32 @@ def _try_import(module_name):
 
 
 def _dependencies(app_name):
-    """Returns the module names of the apps that *app_name* claims to depend
-       upon, or an empty list if it has no dependencies (ie, the app does not
-       export an iterable REQUIRED_APPS).
+    """
+        Returns the module names of the apps that *app_name* claims to depend
+        upon, or an empty list if it has no dependencies (ie, the app does not
+        export an iterable REQUIRED_APPS).
 
-       Raises DependencyImportError (which is a subclass of ImportError, to be
-       handled easily) if *app_name* does not exist. Any exception raised from
-       within the module during import is allowed to propagate, to avoid masking
-       errors which are unrelated to dependency management."""
+        Raises DependencyImportError (which is a subclass of ImportError, to be
+        handled easily) if *app_name* does not exist. Any exception raised from
+        within the module during import is allowed to propagate, to avoid
+        masking errors which are unrelated to dependency management.
+
+          # this module has no dependencies
+          >>> _dependencies("depends")
+          []
+
+          # temporarily add a REQUIRED_APPS constant to this
+          # module, so we can test that this function finds it
+          >>> mod = sys.modules["depends"]
+          >>> mod.REQUIRED_APPS = ["a", "b", "c"]
+          
+          # look for the dependencies
+          >>> _dependencies("depends")
+          ['a', 'b', 'c']
+
+          # clean up the namespace
+          del mod.REQUIRED_APPS
+    """
 
     # try to import the app
     module = _try_import(app_name)
@@ -64,6 +94,13 @@ def _dependencies(app_name):
 
 
 def build(*app_names):
+    """
+        Returns a list of app names (ready to store in settings.INSTALLED_APPS)
+        that includes all of *app_names* and their dependencies. Dependencies
+        are listed before the dependant app, in case the order of importing is
+        important.
+    """
+
     apps = []
 
     def _build(app_name):
